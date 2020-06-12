@@ -1,11 +1,12 @@
 import time
+
 import cv2
 import mtcnn
 import numpy as np
-from sklearn.preprocessing import Normalizer
-from PIL import Image
-from keras_facenet import FaceNet
 import tensorflow as tf
+from PIL import Image
+from tensorflow.keras.models import load_model
+from sklearn.preprocessing import Normalizer
 
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
@@ -39,8 +40,8 @@ def face_extract():
 
 
 def training(x):
-    model = FaceNet()
-    emb = model.embeddings(x)
+    model = load_model('facenet_keras.h5')
+    emb = model.predict(x)
     normalizer = Normalizer(norm='l2')
     normalizer.transform(emb)
     return emb

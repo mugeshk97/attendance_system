@@ -1,4 +1,5 @@
 import sqlite3
+import time
 import preprocess
 import datetime
 import numpy as np
@@ -15,6 +16,7 @@ if user == 1:
     name = input('Enter your Name : ')
     roll = input('Enter your Roll_number : ')
     designation = input('Enter your Designation : ')
+    t0 = time.clock()
     face = preprocess.face_extract()
     encrypted_feature = preprocess.training(face)
     con = sqlite3.connect('feature_database.db', isolation_level=None)
@@ -22,7 +24,11 @@ if user == 1:
     cur.execute("CREATE TABLE IF NOT EXISTS features ( feature BLOB, name TEXT, roll_num TEXT, designation TEXT)")
     cur.execute("INSERT INTO features VALUES (?,?,?,?)", (encrypted_feature, name, roll, designation))
     con.commit()
+    print('Data Saved')
+    t1 = time.clock() - t0
+    print('Time Taken -', t1)
 elif user == 2:
+    t0 = time.clock()
     face = preprocess.face_extract()
     encrypted_feature = preprocess.training(face)
     now = datetime.datetime.now()
@@ -39,6 +45,7 @@ elif user == 2:
         fea = np.frombuffer(fea, dtype='float32')
         fea = np.reshape(fea, (1, -1))
         sim = cosine_similarity(fea, encrypted_feature)
+        print(sim)
         if sim.max() > .80:
             name = data_list[i][1]
             roll_number = data_list[i][2]
@@ -51,10 +58,13 @@ elif user == 2:
             con.commit()
             con.close()
             print('Attendance successfully registered -', name)
+            t1 = time.clock() - t0
+            print('Time Taken -', t1)
             break
         else:
-            print('similarity problem')
+            print('NOT MATCHED')
             break
+
 elif user == 3:
     con = sqlite3.connect('database.db', isolation_level=None)
     df = pd.read_sql_query("SELECT * FROM attendance", con)
